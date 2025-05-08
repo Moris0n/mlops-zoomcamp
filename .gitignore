@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Data
+data/
+data/*
+
 # C extensions
 *.so
 
@@ -172,3 +176,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+data/yellow_tripdata_2023-01.parquet
+data/yellow_tripdata_2023-02.parquet

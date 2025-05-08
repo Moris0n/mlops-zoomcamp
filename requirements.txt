@@ -1,0 +1,10 @@
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+jupyterlab
+pickle
+seaboorn
+pyarrow
+fastparquet
