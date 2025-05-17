@@ -1,6 +1,7 @@
 import os
 import pickle
 import click
+import math
 import mlflow
 import numpy as np
 from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
@@ -34,11 +35,16 @@ def run_optimization(data_path: str, num_trials: int):
     X_val, y_val = load_pickle(os.path.join(data_path, "val.pkl"))
 
     def objective(params):
-
-        rf = RandomForestRegressor(**params)
-        rf.fit(X_train, y_train)
-        y_pred = rf.predict(X_val)
-        rmse = mean_squared_error(y_val, y_pred, squared=False)
+            
+        with mlflow.start_run(run_name="rf-hypo-train"):
+            mlflow.set_tag("model", "random-forest")
+            mlflow.log_params(params)
+            rf = RandomForestRegressor(**params)
+            rf.fit(X_train, y_train)
+            y_pred = rf.predict(X_val)
+            mse = mean_squared_error(y_val, y_pred)
+            rmse = math.sqrt(mse)
+            mlflow.log_metric("rmse", rmse)
 
         return {'loss': rmse, 'status': STATUS_OK}
 

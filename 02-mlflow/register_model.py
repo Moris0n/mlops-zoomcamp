@@ -2,6 +2,7 @@ import os
 import pickle
 import click
 import mlflow
+import math
 
 from mlflow.entities import ViewType
 from mlflow.tracking import MlflowClient
@@ -36,9 +37,11 @@ def train_and_log_model(data_path, params):
         rf.fit(X_train, y_train)
 
         # Evaluate model on the validation and test sets
-        val_rmse = mean_squared_error(y_val, rf.predict(X_val), squared=False)
+        val_mse = mean_squared_error(y_val, rf.predict(X_val))
+        val_rmse = math.sqrt(val_mse)
         mlflow.log_metric("val_rmse", val_rmse)
-        test_rmse = mean_squared_error(y_test, rf.predict(X_test), squared=False)
+        test_mse = mean_squared_error(y_test, rf.predict(X_test))
+        test_rmse = math.sqrt(test_mse)
         mlflow.log_metric("test_rmse", test_rmse)
 
 
@@ -71,10 +74,18 @@ def run_register_model(data_path: str, top_n: int):
 
     # Select the model with the lowest test RMSE
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
-    # best_run = client.search_runs( ...  )[0]
+    runs = client.search_runs(
+        experiment_ids=experiment.experiment_id,
+        run_view_type=ViewType.ACTIVE_ONLY,
+        max_results=top_n,
+        order_by=["metrics.test_rmse ASC"]
+    )
 
     # Register the best model
-    # mlflow.register_model( ... )
+    best_run = runs[0]
+    run_id   = best_run.info.run_id
+    model_uri = f"runs:/{run_id}/models"
+    mlflow.register_model(model_uri=model_uri, name="random-forest-hyperopt")
 
 
 if __name__ == '__main__':
