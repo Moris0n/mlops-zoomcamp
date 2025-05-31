@@ -104,8 +104,11 @@ Save → the scheduler parses it in \~30 s; trigger it from the UI.
 
 # 5 Homework
 ## Question 1
+Airflow 3.0.1
 ## Question 2
+` docker compose run airflow-cli version `  
 
+ 3.0.1
 ## Question 3
 How many records did we load? 
 
@@ -117,11 +120,31 @@ How many records did we load?
 records: (3403766, 19): chan="stdout"
 
 ## Question 4. Data preparation
-Let's apply to the data we loaded in question 3. 
+Let's apply to the data we loaded in question 3.   
 
+Training on 3316216 records  
 What's the size of the result? 
 
 - 2,903,766
 - 3,103,766
-- 3,316,216 
+- **3,316,216**
 - 3,503,766
+
+## Question 5. Train a model
+
+We will now train a linear regression model using the same code as in homework 1.
+
+* Fit a dict vectorizer.
+* Train a linear regression with default parameters.
+* Use pick up and drop off locations separately, don't create a combination feature.
+
+Let's now use it in the pipeline. We will need to create another transformation block, and return both the dict vectorizer and the model.
+
+What's the intercept of the model? 
+
+Hint: print the `intercept_` field in the code block
+
+- 21.77
+- 24.77
+- 27.77
+- 31.77
