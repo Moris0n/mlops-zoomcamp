@@ -76,7 +76,10 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/mlruns:/opt/airflow/mlruns
+    - ${AIRFLOW_PROJ_DIR:-.}/mlflow:/opt/airflow/mlflow
   user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+    - airflow
   depends_on:
     &airflow-common-depends-on
     postgres:
@@ -89,15 +92,20 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+      POSTGRES_MULTIPLE_DATABASES: "airflow,mlflow"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+      - ./postgres/init-multiple-db.sh:/docker-entrypoint-initdb.d/init-multiple-db.sh
+    networks:
+      airflow:
+        aliases:
+          - postgres
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
       retries: 5
       start_period: 5s
     restart: always
-
 
   airflow-apiserver:
     <<: *airflow-common
@@ -268,6 +276,21 @@ services:
     depends_on:
       <<: *airflow-common-depends-on
 
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    volumes:
+      - ./mlruns:/mlruns
+    ports:
+      - "5000:5000"
+    networks:
+      - airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
   # See: https://docs.docker.com/compose/profiles/
@@ -290,20 +313,8 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  mlflow:
-    image: python:3.9
-    working_dir: /mlflow
-    volumes:
-      - ./mlruns:/mlruns
-      - ./mlflow.db:/mlflow.db
-    command: >
-      bash -c "pip install mlflow &&
-               mlflow ui --host 0.0.0.0 --port 5000 
-                         --backend-store-uri sqlite:///mlflow.db 
-                         --default-artifact-root /mlruns"
-    ports:
-      - "5000:5000"
-
-
 volumes:
   postgres-db-volume:
+
+networks:
+  airflow:

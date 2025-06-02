@@ -45,7 +45,9 @@ def preprocess(
     df["duration"] = (
         df.tpep_dropoff_datetime - df.tpep_pickup_datetime
     ).dt.total_seconds() / 60
-    df = df[(df.duration >= 1) & (df.duration <= 60)]
+
+    df = df[(df.duration >= 1) & (df.duration <= 60)].copy()  # ← Fix here
+
     df[categorical] = df[categorical].astype(str)
 
     y = df["duration"].values
@@ -141,18 +143,18 @@ def pipeline():
 
     # 1. download splits
     train_raw = download_split("train")
-    val_raw   = download_split("val")
-    test_raw  = download_split("test")
+    # val_raw   = download_split("val")
+    # test_raw  = download_split("test")
 
     # 2. preprocess (train fits dv, others transform)
     train_pp = preprocess_and_save(train_raw, fit_dv=True)
-    val_pp = preprocess_and_save(val_raw, fit_dv=False)
-    test_pp = preprocess_and_save(test_raw, fit_dv=False)
+    # val_pp = preprocess_and_save(val_raw, fit_dv=False)
+    # test_pp = preprocess_and_save(test_raw, fit_dv=False)
 
-    train_pp >> [val_pp, test_pp]
+   # train_pp >> [val_pp, test_pp]
 
     # 3. train model
-    train_model(train_pp, val_pp)
+    train_model(train_pp, train_pp)
 
 
 dag = pipeline()

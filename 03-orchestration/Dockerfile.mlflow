@@ -1,0 +1,9 @@
+FROM python:3.9.18-slim
+
+WORKDIR /mlflow
+
+RUN pip install mlflow psycopg2-binary
+
+EXPOSE 5000
+
+CMD ["mlflow", "ui", "--backend-store-uri", "postgresql://mlflow:mlflow@postgres/mlflow", "--host", "0.0.0.0"]
