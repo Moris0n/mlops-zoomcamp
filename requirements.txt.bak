@@ -1,0 +1,15 @@
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+jupyterlab
+pickle
+seaboorn
+pyarrow
+fastparquet
+mlflow
+hyperopt
+xgboost
+boto3
+mlflow
